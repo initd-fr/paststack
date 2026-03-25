@@ -45,20 +45,7 @@ class Project:
     run_install: bool
 
 
-@click.command()
-def main():
-    try:
-        while True:
-            project = ask_questions()
-            show_summary(project)
-            if questionary.confirm("Proceed ?").unsafe_ask():
-                break
-        # setup_project(project)
-    except KeyboardInterrupt:
-        click.echo("\nAborted.")
-
-
-def ask_questions() -> Project:
+def display_banner() -> None:
     click.echo(
         r"""
  _____                _        ______        _              _    ___
@@ -71,6 +58,23 @@ def ask_questions() -> Project:
                                                       |_|             |_|   |_|
 """
     )
+
+
+@click.command()
+def main():
+    try:
+        display_banner()
+        while True:
+            project = ask_questions()
+            show_summary(project)
+            if questionary.confirm("Proceed with project setup ?").unsafe_ask():
+                break
+        # setup_project(project)
+    except KeyboardInterrupt:
+        click.echo("\nAborted.")
+
+
+def ask_questions() -> Project:
     project_name = questionary.text("What will your project be called ?").unsafe_ask()
 
     if not project_name:
@@ -80,11 +84,11 @@ def ask_questions() -> Project:
         "Which package manager do you want to use ?",
         choices=[e.value for e in PackageManager],
     ).unsafe_ask()
-    data_base: str = questionary.select(
+    database: str = questionary.select(
         "Which database do you want to use ?", choices=[e.value for e in Database]
     ).unsafe_ask()
 
-    if data_base != "none":
+    if database != "none":
         orm: str = questionary.select(
             "Which ORM do you want to use ?", choices=[e.value for e in Orm]
         ).unsafe_ask()
@@ -107,14 +111,14 @@ def ask_questions() -> Project:
     ).unsafe_ask()
 
     package_manager = PackageManager(package_manager)
-    data_base = Database(data_base)
+    database = Database(database)
     orm = Orm(orm)
     async_task = AsyncTask(async_task)
 
     project = Project(
         project_name=project_name,
         package_manager=package_manager,
-        database=data_base,
+        database=database,
         orm=orm,
         async_task=async_task,
         rate_limiting=rate_limiting,
@@ -129,14 +133,16 @@ def ask_questions() -> Project:
 
 def show_summary(project: Project) -> None:
     click.echo()
-    click.echo(f"  Project : {project.project_name}")
-    click.echo(f"  Package Manager : {project.package_manager.value}")
-    click.echo(f"  Database : {project.database.value}")
-    click.echo(f"  ORM : {project.orm.value}")
-    click.echo(f"  Background task processing : {project.async_task.value}")
-    click.echo(f"  Enable rate limiting : {project.rate_limiting}")
-    click.echo(f"   Use environment configuration : {project.config}")
-    click.echo(f"   Initialize a git repository : {project.git}")
-    click.echo(f"   Use Git-z : {project.git_z}")
-    click.echo(f"   Would you like us to run install ? : {project.run_install}")
+    click.echo(f"Project : {project.project_name}")
+    click.echo(f"Package Manager : {project.package_manager.value}")
+    click.echo(f"Database : {project.database.value}")
+    click.echo(f"ORM : {project.orm.value}")
+    click.echo(f"Background task processing : {project.async_task.value}")
+    click.echo(f"Enable rate limiting : {'yes' if project.rate_limiting else 'no'}")
+    click.echo(f"Use environment configuration : {'yes' if project.config else 'no'}")
+    click.echo(f"Initialize a git repository : {'yes' if project.git else 'no'}")
+    click.echo(f"Use Git-z : {'yes' if project.git_z else 'no'}")
+    click.echo(
+        f"Would you like us to run install ? : {'yes' if project.run_install else 'no'}"
+    )
     click.echo()
