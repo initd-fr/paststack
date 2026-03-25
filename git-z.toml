@@ -1,17 +1,20 @@
+version = "0.2"
+
 # ---------------------------------------------------------
 #  COMMIT TYPES
 # ---------------------------------------------------------
 [types]
-WIP = "Work in progress — Feature not finished yet"
-ADD = "New feature or new file"
+INIT = "Initial commit / project bootstrap"
+WIP = "Work in progress — not ready to merge"
+FEAT = "New feature"
 FIX = "Bug fix"
-UPDATE = "Improvement or modification"
-DELETE = "Delete file or code"
-CONFIG = "Configuration / dependencies / setup"
+CHORE = "Maintenance / tooling / dependencies"
 DOCS = "Documentation only"
-REFACTOR = "Refactor without behaviour change"
-STYLE = "Formatting, CSS, typo, cleanup"
-
+REFACTOR = "Refactor without behavior change"
+STYLE = "Formatting, lint fixes"
+TEST = "Add or update tests"
+PERF = "Performance improvement"
+BUILD = "Build / packaging / release"
 # ---------------------------------------------------------
 #  COMMIT SCOPES
 # ---------------------------------------------------------
@@ -19,16 +22,17 @@ STYLE = "Formatting, CSS, typo, cleanup"
 accept = "list"
 
 list = [
-  "route",
-  "controllers",
-  "security",
-  "storage",
-  "external-api",
-  "data-schema",
-  "auth",
+ "cli",
+  "generator",
+  "template",
+  "project-structure",
   "config",
+  "dependencies",
+  "typing",
+  "lint",
+  "docs",
+  "release"
 ]
-
 # ---------------------------------------------------------
 #  TICKET CONFIG
 # ---------------------------------------------------------
@@ -36,9 +40,7 @@ list = [
 required = false
 prefixes = ["#"]
 
-# ---------------------------------------------------------
-#  COMMIT TEMPLATE
-# ---------------------------------------------------------
+
 [templates]
 commit = """
 {{ type }} {{ description }}{% if scope %} ({{ scope }}){% endif %}{% if ticket %} — {% if type == "WIP" %}Refs{% else %}Closes{% endif %} {{ ticket }}{% endif %}
