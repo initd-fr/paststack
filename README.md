@@ -57,15 +57,15 @@ create-fastapi-app
 
 ## Planned Features
 
-    - FastAPI project scaffolding (file and folder generation)
-    - Multiple architecture templates (minimal, modular, clean architecture)
-    - Environment configuration
-    - Optional database setup (SQLite, PostgreSQL, pgvector)
-    - ORM integration (SQLAlchemy, SQLModel)
-    - Async task systems (background tasks, Celery, Arq)
-    - Rate limiting setup
-    - Git initialization and commit tooling
-    - Dependency installation automation
+- FastAPI project scaffolding (file and folder generation)
+- Multiple architecture templates (minimal, modular, clean architecture)
+- Environment configuration
+- Optional database setup (SQLite, PostgreSQL, pgvector)
+- ORM integration (SQLAlchemy, SQLModel)
+- Async task systems (background tasks, Celery, Arq)
+- Rate limiting setup
+- Git initialization and commit tooling
+- Dependency installation automation
 
 ## Development Setup
 
@@ -105,9 +105,9 @@ Contributions are welcome — but must follow the project’s standards.
 Before opening a pull request:
 
 - keep changes focused and minimal
-  - respect the existing project structure
-  - ensure code is typed and linted
-  - follow commit conventions
+- respect the existing project structure
+- ensure code is typed and linted
+- follow commit conventions
 
 ### Commit Convention
 
@@ -117,9 +117,19 @@ This project uses a structured commit format:
 TYPE description (scope)
 ```
 
-Types - INIT — Initial setup - FEAT — New feature - FIX — Bug fix - CHORE — Maintenance / tooling - REFACTOR — Code improvement without behavior change - STYLE — Formatting / lint fixes - DOCS — Documentation - BUILD — Packaging / release
+**Types:**
 
-Scopes - cli - generator - template - config - dependencies - typing - lint - docs
+| Type | Description |
+|------|-------------|
+| `INIT` | Initial setup |
+| `FEAT` | New feature |
+| `FIX` | Bug fix |
+| `CHORE` | Maintenance / tooling |
+| `REFACTOR` | Code improvement without behavior change |
+| `STYLE` | Formatting / lint fixes |
+| `BUILD` | Packaging / release |
+
+**Scopes:** `cli`, `generator`, `template`, `config`, `dependencies`, `typing`, `lint`, `docs`
 
 Example:
 
@@ -129,17 +139,22 @@ FEAT add CLI question flow (cli)
 
 ## Roadmap
 
-[X] CLI initialization
-[X] Interactive configuration flow
-[X] Typing and linting setup
-[ ] FastAPI project generation
-[ ] Architecture templates
-[ ] Configuration system
-[ ] PyPI release
+- [x] CLI initialization
+- [x] Interactive configuration flow
+- [x] Typing and linting setup
+- [ ] FastAPI project generation
+- [ ] Architecture templates
+- [ ] Configuration system
+- [ ] PyPI release
 
 ## Why this project
 
-This project aims to: - reduce friction when starting backend services - enforce best practices early - provide a consistent development baseline - improve long-term maintainability
+This project aims to:
+
+- reduce friction when starting backend services
+- enforce best practices early
+- provide a consistent development baseline
+- improve long-term maintainability
 
 ## License
 
