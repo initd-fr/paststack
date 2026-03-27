@@ -1,6 +1,7 @@
 import click
 import questionary
-from models import AsyncTask, Database, Orm, PackageManager, Project
+
+from create_fastapi_app.models import AsyncTask, Database, Orm, PackageManager, Project
 
 
 def ask_questions() -> Project:
@@ -9,22 +10,22 @@ def ask_questions() -> Project:
     if not project_name:
         project_name = "my_fastapi_app"
 
-    package_manager: str = questionary.select(
+    raw_package_manager: str = questionary.select(
         "Which package manager do you want to use ?",
         choices=[e.value for e in PackageManager],
     ).unsafe_ask()
-    database: str = questionary.select(
+    raw_database: str = questionary.select(
         "Which database do you want to use ?", choices=[e.value for e in Database]
     ).unsafe_ask()
 
-    if database != "none":
-        orm: str = questionary.select(
+    if raw_database != "none":
+        raw_orm: str = questionary.select(
             "Which ORM do you want to use ?", choices=[e.value for e in Orm]
         ).unsafe_ask()
     else:
-        orm = "none"
+        raw_orm = "none"
 
-    async_task: str = questionary.select(
+    raw_async_task: str = questionary.select(
         "Do you need background task processing ?",
         choices=[e.value for e in AsyncTask],
     ).unsafe_ask()
@@ -39,10 +40,10 @@ def ask_questions() -> Project:
         "Would you like us to run install ?"
     ).unsafe_ask()
 
-    package_manager = PackageManager(package_manager)
-    database = Database(database)
-    orm = Orm(orm)
-    async_task = AsyncTask(async_task)
+    package_manager = PackageManager(raw_package_manager)
+    database = Database(raw_database)
+    orm = Orm(raw_orm)
+    async_task = AsyncTask(raw_async_task)
 
     project = Project(
         project_name=project_name,

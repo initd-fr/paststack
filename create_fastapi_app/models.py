@@ -1,13 +1,14 @@
-from dataclasses import dataclass
 from enum import Enum
 
+from pydantic import BaseModel
 
-class PackageManager(Enum):
+
+class PackageManager(str, Enum):
     PIP = "pip"
     UV = "uv"
 
 
-class Database(Enum):
+class Database(str, Enum):
     NONE = "none"
     SQLITE = "sqlite"
     POSTGRES = "postgres"
@@ -15,21 +16,20 @@ class Database(Enum):
     POSTGRES_VECTOR = "postgres_vector"
 
 
-class Orm(Enum):
+class Orm(str, Enum):
     NONE = "none"
     SQLALCHEMY = "sqlalchemy"
     SQLMODEL = "sqlmodel"
 
 
-class AsyncTask(Enum):
+class AsyncTask(str, Enum):
     NONE = "none"
     BACKGROUND = "background"
     CELERY = "celery"
     ARQ = "arq"
 
 
-@dataclass
-class Project:
+class Project(BaseModel):
     project_name: str
     package_manager: PackageManager
     database: Database
