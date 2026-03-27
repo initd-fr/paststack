@@ -9,8 +9,11 @@ class Status(str, Enum):
 
 
 class GetStatus(BaseModel):
-    status = Status
-    app_name = str
-    app_version = str
-    cpu_usage = int
-    memory_usage = int
+    status: Status
+    app_name: str
+    app_version: str
+    cpu_usage: float
+    memory_usage: float
+    docs_url: str
+    redoc_url: str
+    error: str | None = None
