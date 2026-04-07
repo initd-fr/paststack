@@ -3,16 +3,6 @@ from enum import Enum
 from pydantic import BaseModel
 
 
-class StructureChoice(str, Enum):
-    MINIMAL = "minimal"
-    MODULAR = "modular"
-
-
-class PackageManager(str, Enum):
-    PIP = "pip"
-    UV = "uv"
-
-
 class Database(str, Enum):
     NONE = "none"
     SQLITE = "sqlite"
@@ -29,8 +19,7 @@ class Orm(str, Enum):
 
 class Project(BaseModel):
     project_name: str
-    project_structure: StructureChoice
-    package_manager: PackageManager
+    package_manager: str
     use_typing: bool
     use_ruff: bool
     enable_cors: bool
