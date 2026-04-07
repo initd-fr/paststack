@@ -44,8 +44,9 @@ wheels = [
 [[package]]
 name = "create-fastapi-app"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "pydantic" },
     { name = "questionary" },
     { name = "typer" },
@@ -59,6 +60,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.1.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "questionary", specifier = ">=2.1.1" },
     { name = "typer", specifier = ">=0.24.1" },
