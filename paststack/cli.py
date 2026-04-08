@@ -6,7 +6,6 @@ from pathlib import Path
 from shutil import copyfile, which
 
 import click
-import questionary
 from rich.progress import (
     BarColumn,
     Progress,
@@ -17,7 +16,7 @@ from rich.progress import (
 
 from paststack.banner import display_banner
 from paststack.models import Database, Orm, Project
-from paststack.prompts import ask_questions, show_summary
+from paststack.prompts import ask_questions, confirm, show_summary
 
 TEMPLATES_ROOT = Path(__file__).resolve().parent / "templates"
 BASE = TEMPLATES_ROOT / "base"
@@ -66,6 +65,13 @@ def _build_extra(project: Project) -> dict[str, str]:
 def _subprocess_env_without_venv() -> dict[str, str]:
     env = os.environ.copy()
     env.pop("VIRTUAL_ENV", None)
+    return env
+
+
+def _uv_env_for_generated_project(project_root: Path) -> dict[str, str]:
+    """Force uv à cibler le projet généré (évite de sync le mauvais pyproject en remontant l’arborescence)."""
+    env = _subprocess_env_without_venv()
+    env["UV_PROJECT"] = str(project_root.resolve())
     return env
 
 
@@ -126,14 +132,28 @@ def _uv_extras(project: Project) -> list[str]:
     return extras
 
 
-@click.command()
 def main() -> None:
+    # Ne pas bloquer sur isatty() : le terminal intégré VS Code peut le signaler à tort.
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        click.echo(
+            click.style(
+                "Note : stdin/stdout ne semblent pas être un TTY — si les questions ne "
+                "s’affichent pas, lance paststack dans Terminal.app / iTerm ou "
+                "`python -m paststack`.",
+                fg="yellow",
+            ),
+            err=True,
+        )
     try:
         display_banner()
+        sys.stdout.flush()
+        sys.stderr.flush()
+        click.echo(click.style("Configuration du projet (réponds aux questions ci-dessous)…\n", fg="cyan"))
+        sys.stdout.flush()
         while True:
             project = ask_questions()
             show_summary(project)
-            if questionary.confirm("Proceed with project setup ?").unsafe_ask():
+            if confirm("Proceed with project setup ?", default=True):
                 break
         setup_project(project)
     except KeyboardInterrupt:
@@ -240,8 +260,9 @@ def setup_project(project: Project) -> None:
     if project.rate_limiting:
         _copy_template_tree(RATE_LIMITING, main_directory, project, extra)
 
-    venv_path = (main_directory / project.project_name).resolve()
+    venv_path = (main_directory / ".venv").resolve()
     py_exe = _venv_python(venv_path).resolve()
+    uv_env = _uv_env_for_generated_project(main_directory)
 
     with Progress(
         SpinnerColumn(),
@@ -261,7 +282,14 @@ def setup_project(project: Project) -> None:
 
         if project.run_install:
             uv_extras = _uv_extras(project)
-            cmd = ["uv", "sync", "-p", str(py_exe)]
+            cmd = [
+                "uv",
+                "sync",
+                "--project",
+                str(main_directory.resolve()),
+                "-p",
+                str(py_exe),
+            ]
             for e in uv_extras:
                 cmd.append(f"--extra={e}")
             t_sync = progress.add_task("uv sync (dépendances)…", total=1)
@@ -269,13 +297,12 @@ def setup_project(project: Project) -> None:
                 cmd,
                 cwd=main_directory,
                 check=True,
-                env=_subprocess_env_without_venv(),
+                env=uv_env,
             )
             progress.update(t_sync, completed=1)
 
     if project.git_z:
         subprocess.run(["git", "init"], cwd=main_directory, check=True)
-        # --default : config git-z sans wizard interactif (sinon le CLI semble « figé »)
         result = subprocess.run(
             ["git", "z", "init", "--default"],
             cwd=main_directory,
@@ -299,21 +326,21 @@ def setup_project(project: Project) -> None:
         copyfile(env_example, env_dest)
         click.echo("Fichier .env créé à partir de .env.example.")
 
-    start_uvicorn = project.run_install and questionary.confirm(
+    start_uvicorn = project.run_install and confirm(
         "Démarrer l’API maintenant (uvicorn --reload) ?",
         default=True,
-    ).unsafe_ask()
+    )
 
     if start_uvicorn and project.database == Database.POSTGRES:
-        if questionary.confirm(
+        if confirm(
             "Lancer PostgreSQL avec Docker (`docker compose up -d`) ?",
             default=True,
-        ).unsafe_ask():
+        ):
             if not _docker_compose_up_postgres(main_directory):
-                start_uvicorn = questionary.confirm(
+                start_uvicorn = confirm(
                     "Lancer uvicorn quand même ? (l’API échouera si Postgres n’est pas joignable.)",
                     default=False,
-                ).unsafe_ask()
+                )
             else:
                 time.sleep(2)
         else:
@@ -324,10 +351,10 @@ def setup_project(project: Project) -> None:
                     fg="yellow",
                 )
             )
-            start_uvicorn = questionary.confirm(
+            start_uvicorn = confirm(
                 "Lancer uvicorn quand même ?",
                 default=False,
-            ).unsafe_ask()
+            )
 
     if start_uvicorn:
         click.echo(
@@ -340,6 +367,8 @@ def setup_project(project: Project) -> None:
             [
                 "uv",
                 "run",
+                "--project",
+                str(main_directory.resolve()),
                 "--python",
                 str(py_exe),
                 "uvicorn",
@@ -349,5 +378,5 @@ def setup_project(project: Project) -> None:
                 "src",
             ],
             cwd=main_directory,
-            env=_subprocess_env_without_venv(),
+            env=uv_env,
         )

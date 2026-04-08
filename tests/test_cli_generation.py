@@ -1,3 +1,5 @@
+"""Tests de génération du projet pour chaque combinaison (fichiers + cohérence)."""
+
 from __future__ import annotations
 
 import subprocess
@@ -32,14 +34,13 @@ def no_subprocess(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture
 def no_server_prompt(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        "paststack.cli.questionary.confirm",
-        _stub_confirm,
-    )
+    monkeypatch.setattr("paststack.cli.confirm", lambda *_a, **_k: False)
 
 
 def test_combination_count_matches_iter() -> None:
-    assert combination_count() == sum(1 for _ in iter_database_orm_rate_limit_triples())
+    assert combination_count() == sum(
+        1 for _ in iter_database_orm_rate_limit_triples()
+    )
     assert combination_count() == 10
 
 

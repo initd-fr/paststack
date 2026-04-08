@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "paststack"
-version = "0.1.0"
+version = "0.1.5"
 description = "Opinionated CLI to generate production-ready FastAPI boilerplate with typing and linting."
 readme = "README.md"
 license = "MIT"
@@ -48,4 +48,5 @@ dev = [
     "mypy>=1.19.1",
     "pytest>=8.0.0",
     "ruff>=0.15.7",
+    "twine>=6.0.0",
 ]
