@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "paststack"
-version = "0.1.5"
+version = "0.1.6"
 description = "Opinionated CLI to generate production-ready FastAPI boilerplate with typing and linting."
 readme = "README.md"
 license = "MIT"

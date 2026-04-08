@@ -1,31 +1,62 @@
 import os
 import sys
+from typing import TextIO
 
 import click
 import questionary
 
 from paststack.models import Database, Orm, Project
 
+# Paires (entrée, sortie) pour le questionnaire : /dev/tty évite stdin « cassé » (ex. terminal VS Code).
+_io_pair: tuple[TextIO, TextIO] | None = None
+
+
+def _interactive_io() -> tuple[TextIO, TextIO]:
+    """Lit/écris sur le TTY réel quand c’est possible (macOS, Linux).
+
+    `PASTSTACK_USE_STDIN=1` force stdin/stdout (ex. scripts avec pipe).
+    """
+    global _io_pair
+    if _io_pair is not None:
+        return _io_pair
+    if os.environ.get("PASTSTACK_USE_STDIN", "").strip().lower() in ("1", "true", "yes", "on"):
+        _io_pair = (sys.stdin, sys.stdout)
+        return _io_pair
+    if sys.platform == "win32":
+        _io_pair = (sys.stdin, sys.stdout)
+        return _io_pair
+    try:
+        tty_in = open("/dev/tty", "r", encoding="utf-8", errors="replace")
+        tty_out = open("/dev/tty", "w", encoding="utf-8", errors="replace", buffering=1)
+    except OSError:
+        _io_pair = (sys.stdin, sys.stdout)
+        return _io_pair
+    _io_pair = (tty_in, tty_out)
+    return _io_pair
+
 
 def _write_line(message: str = "") -> None:
-    sys.stdout.write(message + "\n")
-    sys.stdout.flush()
+    _, out = _interactive_io()
+    out.write(message + "\n")
+    out.flush()
 
 
 def _read_line() -> str | None:
     """Lit une ligne ; None si EOF (stdin fermé / pipe vide)."""
-    line = sys.stdin.readline()
+    inp, _out = _interactive_io()
+    line = inp.readline()
     if line == "":
         return None
     return line.rstrip("\r\n")
 
 
 def _prompt_text(label: str, default: str = "", *, show_default: bool = True) -> str:
+    _, out = _interactive_io()
     if show_default and default:
-        sys.stdout.write(f"{label} [{default}]: ")
+        out.write(f"{label} [{default}]: ")
     else:
-        sys.stdout.write(f"{label}: ")
-    sys.stdout.flush()
+        out.write(f"{label}: ")
+    out.flush()
     raw = _read_line()
     if raw is None:
         return default
@@ -34,9 +65,10 @@ def _prompt_text(label: str, default: str = "", *, show_default: bool = True) ->
 
 def _prompt_confirm(message: str, default: bool = False) -> bool:
     hint = "Y/n" if default else "y/N"
+    _, out = _interactive_io()
     while True:
-        sys.stdout.write(f"{message} [{hint}] ")
-        sys.stdout.flush()
+        out.write(f"{message} [{hint}] ")
+        out.flush()
         raw = _read_line()
         if raw is None:
             return default
@@ -51,9 +83,10 @@ def _prompt_confirm(message: str, default: bool = False) -> bool:
 
 
 def _prompt_int_range(label: str, lo: int, hi: int, default: int) -> int:
+    _, out = _interactive_io()
     while True:
-        sys.stdout.write(f"{label} [{lo}-{hi}, défaut {default}]: ")
-        sys.stdout.flush()
+        out.write(f"{label} [{lo}-{hi}, défaut {default}]: ")
+        out.flush()
         raw = _read_line()
         if raw is None or raw.strip() == "":
             return default
@@ -68,10 +101,11 @@ def _prompt_int_range(label: str, lo: int, hi: int, default: int) -> int:
 
 
 def use_simple_prompts() -> bool:
-    """Par défaut : prompts `click` (fiables partout, dont terminal intégré VS Code / Cursor).
+    """Par défaut : questionnaire sur stdin/stdout, en priorité `/dev/tty` (macOS/Linux).
 
-    Questionary (prompt_toolkit) uniquement si tu choisis explicitement :
-    `PASTSTACK_USE_QUESTIONARY=1 paststack`
+    Utile quand le terminal VS Code / Cursor fournit un stdin incorrect.
+    Forcer stdin classique (pipe) : `PASTSTACK_USE_STDIN=1 paststack`.
+    Questionary : `PASTSTACK_USE_QUESTIONARY=1 paststack`.
     """
     if os.environ.get("PASTSTACK_USE_QUESTIONARY", "").strip().lower() in ("1", "true", "yes", "on"):
         return False

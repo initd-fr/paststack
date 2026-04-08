@@ -9,7 +9,7 @@ pip install -U paststack
 paststack
 ```
 
-Le questionnaire lit **directement stdin/stdout** (fiable dans le terminal intégré VS Code / Cursor). Pour l’UI **questionary** à la place : `PASTSTACK_USE_QUESTIONARY=1 paststack`.
+Le questionnaire utilise **`/dev/tty`** sur macOS/Linux quand c’est possible (contourne un stdin incorrect du terminal VS Code / Cursor). Forcer stdin : `PASTSTACK_USE_STDIN=1 paststack`. **Questionary** : `PASTSTACK_USE_QUESTIONARY=1 paststack`.
 
 ## Develop
 
