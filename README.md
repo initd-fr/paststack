@@ -1,4 +1,4 @@
-# create-fastapi-app
+# paststack
 
 ![logo](./img/logo.png)
 
@@ -14,234 +14,100 @@ A CLI to generate production-ready FastAPI backends with a clean, opinionated ar
 
 ---
 
-## Overview
+## Vue d’ensemble
 
-create-fastapi-app is an opinionated CLI designed to generate production-ready FastAPI backends with modern Python tooling and clear architecture conventions.
+**paststack** génère un projet prêt au développement : arborescence `src/app/` (core, api, routes, models, schemas), configuration **pydantic-settings**, CORS, santé `/health` et `/ready`.
 
-It generates a structured backend ready to scale, not just a starting point.
+Décisions actuelles de la v1 :
 
-The goal is not just to scaffold code — it's to enforce a consistent, scalable foundation from day one, whether you're building web backends, microservices, or data/ML APIs.
-
----
-
-## Key Features
-
-- Interactive CLI to generate FastAPI backends
-- Opinionated architecture templates (minimal, modular)
-- Modern Python tooling out of the box (Ruff, Mypy, strict typing)
-- Configurable stack (database, ORM, package manager)
-- Progressive versioning — v0.5 → v1 → v2, each expanding the ecosystem
-
-## Project Status
-
-> **Work in progress**
-
-The CLI foundations and interactive configuration flow are implemented.  
-FastAPI project generation is currently under development.
+| Sujet                   | Choix                                                                                                                             |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Gestionnaire de paquets | **uv**                                                                                                                            |
+| Base de données         | **none**, **SQLite**, **PostgreSQL**                                                                                              |
+| Couche données          | **sans ORM** (driver async) ou **SQLModel** (ORM unique)                                                                          |
+| Rate limiting           | **slowapi** (optionnel), limite par IP                                                                                            |
+| PostgreSQL              | **docker-compose** fourni ; URL alignée sur le conteneur                                                                          |
+| Dépendances             | **extras** dans le `pyproject.toml` généré (`sqlite-none`, `sqlite-sqlmodel`, `postgres-none`, `postgres-sqlmodel`, `rate-limit`) |
+| Git                     | `git init` optionnel                                                                                                              |
+| Messages de commit      | **[git-z](https://github.com/ejpcmac/git-z)** optionnel (`git z init` dans le projet généré)                                      |
 
 ---
 
-## Current Scope
+## Fonctionnalités
 
-What is currently available:
-
-- Interactive CLI entrypoint (`create-fastapi-app`)
-- Project configuration wizard (project name, stack options, etc.)
-- Typed configuration models
-- Restart / validation flow before generation
-- Linting with Ruff
-- Static typing with Mypy
+- Assistant interactif (`questionary`) : nom du projet, CORS, base, ORM, rate limiting, installation `uv`, git, git-z
+- Copie des templates embarqués dans le package (`templates/**/*`)
+- Création d’un venv + `uv sync` avec les bons `--extra` si demandé
 
 ---
 
-## What it does today
+## Utilisation
 
-Run the CLI to configure your backend interactively. The tool captures your full stack setup (architecture, database, ORM, tooling) and prepares a ready-to-generate FastAPI project.
-
-The scaffolding engine is currently in progress.
+Une fois le package installé (`pip install paststack` depuis PyPI, ou `uv pip install -e .` depuis ce dépôt) :
 
 ```bash
-create-fastapi-app
+paststack
 ```
 
-## Development Setup
+Puis ouvrir le dossier créé, copier `.env.example` vers `.env`, lancer l’API (voir le `README.md` généré dans le projet).
 
-### Clone the repository and install dependencies:
+### Développement (ce dépôt)
 
 ```bash
-git clone https://github.com/initd-fr/create-fastapi-app.git
-cd create-fastapi-app
+git clone https://github.com/initd-fr/paststack.git
+cd paststack
 uv sync
-```
-
-### Install locally in editable mode:
-
-```bash
 uv pip install -e .
+paststack
 ```
 
-### Run the CLI:
-
-```bash
-create-fastapi-app
-```
-
-## Code Quality
-
-Before committing, ensure code quality:
+### Qualité (ce dépôt)
 
 ```bash
 uv run ruff check .
 uv run mypy .
 ```
 
-## Contributing
+### Tests (ce dépôt)
 
-We are open to suggestions for future versions (v1.5, v2+).
-
-If you have ideas for features, tooling integrations, or improvements, feel free to open an issue or discussion.
-
-Before opening a pull request:
-
-- keep changes focused and minimal
-- respect the existing project structure
-- ensure code is typed and linted
-- follow commit conventions
-
-### Commit Convention
-
-This project uses a structured commit format:
-
-```
-TYPE description (scope)
+```bash
+uv sync --group dev
+uv run pytest tests/ -v
 ```
 
-**Types:**
-
-| Type       | Description                              |
-| ---------- | ---------------------------------------- |
-| `INIT`     | Initial setup                            |
-| `FEAT`     | New feature                              |
-| `FIX`      | Bug fix                                  |
-| `CHORE`    | Maintenance / tooling                    |
-| `REFACTOR` | Code improvement without behavior change |
-| `STYLE`    | Formatting / lint fixes                  |
-| `BUILD`    | Packaging / release                      |
-
-**Scopes:** `cli`, `generator`, `template`, `config`, `dependencies`, `typing`, `lint`, `docs`
-
-Example:
-
-```
-FEAT add CLI question flow (cli)
-```
-
-## Vision
-
-create-fastapi-app aims to become the reference scaffolding tool for FastAPI projects in Python — the equivalent of `create-t3-app` for the backend ecosystem.
-
-The focus is on clarity, strong defaults, and progressive complexity: simple setups work out of the box, advanced architectures are unlocked as the project matures.
-
-Each version expands the ecosystem while preserving the same opinionated, low-friction developer experience.
+Les combinaisons valides (SGBD × ORM × rate limiting) sont exposées dans `paststack.combinations` pour les tests ou un usage programmatique.
 
 ---
 
-## Roadmap
+## Conventions de commit (ce dépôt)
 
-### v0.5 — Core CLI (FastAPI Starter)
+Format décrit dans `git-z.toml` : `TYPE description (scope)` (types et scopes listés dans le fichier).
 
-- [x] CLI initialization
-- [x] Interactive configuration flow
-- [x] Typed configuration models
-- [x] Linting and typing (Ruff + Mypy)
-
-- [ ] FastAPI project generation
-- [ ] Project structures:
-  - minimal
-  - modular
-- [ ] Package managers:
-  - pip
-  - uv
-- [ ] Database support:
-  - none
-  - SQLite
-  - PostgreSQL
-- [ ] ORM:
-  - SQLAlchemy
-  - SQLModel
-- [ ] Basic rate limiting
-- [ ] `.env` configuration
-- [ ] Optional typing setup
-- [ ] Optional Ruff integration
-- [ ] Virtual environment creation
-- [ ] Dependency installation
-- [ ] Run server after setup
+Pour utiliser l’assistant [git-z](https://github.com/ejpcmac/git-z) en local : `git z init` (après installation de l’outil). Le générateur peut lancer `git z init` dans le **nouveau** projet si tu coches l’option correspondante.
 
 ---
 
-### v1 — Advanced Backend Generator (Data / ML / DL Ready)
+## Feuille de route (indicative)
 
-- [ ] Extended package manager support:
-  - poetry
-  - pipenv
+### v0.x — générateur actuel
 
-- [ ] Extended database support:
-  - MySQL / MariaDB
-  - MongoDB
+- [x] CLI interactive + modèle `Project` typé
+- [x] Template FastAPI (`core`, `api`, routes, models, schemas)
+- [x] SQLite / Postgres × ORM ou driver seul
+- [x] Rate limiting (slowapi) en option
+- [x] Venv + `uv sync` avec extras
+- [x] `git init` / `git z init` en option
 
-- [ ] ORM / ODM:
-  - SQLAlchemy
-  - SQLModel
-  - Beanie (MongoDB async)
+### Plus tard
 
-- [ ] Data processing stack (optional):
-  - pandas
-  - numpy
-  - scikit-learn
-
-- [ ] Deep learning support (optional):
-  - PyTorch
-  - TensorFlow
-
-- [ ] ML/DL project structure:
-  - `ml/`
-  - `pipelines/`
-  - `models/`
-
-- [ ] Improved configuration system
-- [ ] Advanced rate limiting
-- [ ] Production-ready project templates
+- Variantes d’architecture (minimal / modulable avancée), autres SGBD, observabilité, etc.
 
 ---
 
-### v2 — Industrialization & Scaling
+## Pourquoi ce projet
 
-- [ ] Redis integration
-- [ ] Task queues:
-  - Celery
-  - ARQ
+Poser une base FastAPI propre (structure, typing, lint, DB) prend du temps. Ce CLI applique les mêmes défauts à chaque nouveau service.
 
-- [ ] Event streaming:
-  - Kafka
-
-- [ ] Distributed computing:
-  - Ray
-
-- [ ] Microservices patterns
-- [ ] Event-driven architecture
-- [ ] Advanced security hardening
-- [ ] Observability (logging / metrics)
-
----
-
-## Why this project
-
-Starting a FastAPI project correctly takes time — structure, tooling, database setup, typing, linting.
-
-This CLI removes that friction by generating a clean, consistent, and production-ready foundation in minutes.
-
-It ensures every project starts with the same high standards, reducing technical debt from day one.
-
-## License
+## Licence
 
 MIT

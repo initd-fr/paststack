@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "create-fastapi-app"
+name = "paststack"
 version = "0.1.0"
 description = "Opinionated CLI to generate production-ready FastAPI boilerplate with typing and linting."
 readme = "README.md"
@@ -13,25 +13,39 @@ dependencies = [
     "click>=8.1.0",
     "pydantic>=2.12.5",
     "questionary>=2.1.1",
+    "rich>=13.0.0",
     "typer>=0.24.1",
 ]
+
+[project.urls]
+Repository = "https://github.com/initd-fr/paststack"
+
 [project.scripts]
-create-fastapi-app = "create_fastapi_app.cli:main"
+paststack = "paststack.cli:main"
 
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.package-data]
-create_fastapi_app = ["templates/**/*"]
+paststack = [
+    "templates/**/*",
+    "templates/**/.env.example",
+    "templates/**/.gitignore",
+]
 
 [tool.setuptools.packages.find]
-include = ["create_fastapi_app*"]
+include = ["paststack*"]
 
 [tool.uv]
 package = true
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
 [dependency-groups]
 dev = [
     "mypy>=1.19.1",
+    "pytest>=8.0.0",
     "ruff>=0.15.7",
 ]
